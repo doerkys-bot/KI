@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Datenschutzhinweis</title>
+<style>
+body{
+  background:#05070f;
+  color:#eaeaea;
+  font-family:system-ui,sans-serif;
+  padding:2rem;
+  max-width:720px;
+  margin:auto;
+}
+button{
+  margin-top:2rem;
+  padding:1rem 2rem;
+  font-size:1rem;
+}
+</style>
+</head>
+<body>
+
+<h2>Datenschutz & Blickerfassung</h2>
+
+<p>
+Diese Anwendung nutzt <strong>WebGazer.js</strong>, um Ihre Blickrichtung
+über die Webcam lokal im Browser zu berechnen.
+</p>
+
+<ul>
+<li>Es werden <strong>keine Videoaufnahmen gespeichert</strong></li>
+<li>Keine Daten werden an Server gesendet</li>
+<li>Die Kalibrierung wird <strong>lokal im Browser</strong> gespeichert</li>
+<li>Die Kamera wird nur für die Blickerfassung genutzt</li>
+</ul>
+
+<p>
+Mit der Zustimmung starten Sie einen Kalibrierungsprozess,
+der notwendig ist, um die Anwendung zu nutzen.
+</p>
+
+<button onclick="accept()">Zustimmen & fortfahren</button>
+
+<script>
+function accept(){
+  localStorage.setItem("aurion_privacy_ok","true");
+  window.location.href="calibration.html";
+}
+</script>
+
+</body>
+</html>

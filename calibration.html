@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Augen-Kalibrierung</title>
+<script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+<style>
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  background:#000;
+  color:#7fffd4;
+  font-family:system-ui,sans-serif;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+#info{ text-align:center; font-size:1rem; opacity:0.8; margin-bottom:20px; }
+
+.point{
+  position:absolute;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:radial-gradient(circle,#7fffd4,#00aaff);
+  transform:translate(-50%,-50%);
+  cursor:pointer;
+  box-shadow:0 0 12px rgba(0,200,255,.7);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.point.active{
+  transform:scale(1.4);
+  box-shadow:0 0 30px rgba(0,255,255,1);
+}
+
+#progress{
+  position:absolute;
+  bottom:30px;
+  font-size:0.9rem;
+  opacity:0.7;
+}
+
+#doneButton{
+  display:none;
+  padding:12px 24px;
+  font-size:1rem;
+  background:#0b1223;
+  color:#7fffd4;
+  border:1px solid #7fffd4;
+  border-radius:6px;
+  cursor:pointer;
+  margin-top:40px;
+}
+
+/* Gaze-Dot */
+#gazeDot{
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  position:fixed;
+  background:radial-gradient(circle,#7fffd4,#00aaff);
+  pointer-events:none;
+  box-shadow:0 0 18px rgba(0,200,255,.8);
+  z-index:9999;
+}
+</style>
+</head>
+<body>
+
+<div id="info">Bitte klicken Sie nacheinander auf jeden Punkt</div>
+<div id="progress"></div>
+<button id="doneButton" onclick="goToLibrary()">Zur Bibliothek</button>
+<div id="gazeDot"></div>
+
+<script>
+// --- Guard ---
+if(!localStorage.getItem("aurion_privacy_ok")){
+  location.href="privacy.html";
+}
+
+// --- Kalibrierpunkte ---
+const points = [
+  [10,10],[50,10],[90,10],
+  [10,50],[50,50],[90,50],
+  [10,90],[50,90],[90,90]
+];
+
+let index = 0;
+const progress = document.getElementById("progress");
+const doneButton = document.getElementById("doneButton");
+const gazeDot = document.getElementById("gazeDot");
+
+// Gaze Position
+let gazeX = window.innerWidth/2;
+let gazeY = window.innerHeight/2;
+const smoothFactor = 0.15;
+
+// --- Fortschritt updaten ---
+function updateProgress(){ progress.textContent = `Kalibrierung: ${index} / ${points.length}`; }
+
+// --- Nächster Punkt anzeigen ---
+function showPoint(){
+  if(index >= points.length){ finishCalibration(); return; }
+
+  const [x,y] = points[index];
+  const p = document.createElement("div");
+  p.className="point active";
+  p.style.left = x+"%";
+  p.style.top = y+"%";
+
+  document.body.appendChild(p);
+
+  p.addEventListener("click", ()=>{
+    webgazer.recordScreenPosition(
+      window.innerWidth*(x/100),
+      window.innerHeight*(y/100),
+      "click"
+    );
+    p.remove();
+    index++;
+    updateProgress();
+    showPoint();
+  });
+}
+
+// --- Kalibrierung abgeschlossen ---
+function finishCalibration(){
+  localStorage.setItem(
+    "aurion_gaze_calibration",
+    JSON.stringify({
+      screen:{ w: window.innerWidth, h: window.innerHeight },
+      points: points.length,
+      time: Date.now()
+    })
+  );
+  updateProgress();
+  doneButton.style.display = "inline-block";
+}
+
+// --- Button zur Bibliothek ---
+function goToLibrary(){ location.href="bibliothek_aug.html"; }
+
+// --- WebGazer starten ---
+webgazer.setRegression("ridge").setTracker("clmtrackr").begin();
+webgazer.showVideo(false);
+webgazer.showPredictionPoints(false);
+
+// --- GazeDot bewegen ---
+webgazer.setGazeListener(data=>{
+  if(!data || !data.x || !data.y) return;
+
+  const targetX = (data.x / window.innerWidth) * window.innerWidth;
+  const targetY = (data.y / window.innerHeight) * window.innerHeight;
+
+  gazeX += (targetX - gazeX) * smoothFactor;
+  gazeY += (targetY - gazeY) * smoothFactor;
+
+  gazeDot.style.left = (gazeX-8)+"px";
+  gazeDot.style.top  = (gazeY-8)+"px";
+}).begin();
+
+// --- Start ---
+updateProgress();
+showPoint();
+</script>
+
+</body>
+</html>

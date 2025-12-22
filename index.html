@@ -1,119 +1,180 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<title>Frontkamera → WebGazer Übergabe</title>
-<script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Aurion Intro – Touch Start</title>
 
 <style>
-body{
-  margin:0;
-  background:#05070f;
-  color:#eaeaea;
-  font-family:system-ui,sans-serif;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:20px;
-}
+  body {
+    margin:0;
+    background:#030305;
+    overflow:hidden;
+    font-family: "Segoe UI", system-ui, Arial;
+  }
 
-#panel{
-  width:340px;
-  background:#111;
-  border-radius:14px;
-  padding:20px;
-  margin-bottom:15px;
-}
+  /* Layer Hints */
+  #tapStart {
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#cde8ff;
+    font-size:22px;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+  }
 
-button{
-  width:100%;
-  padding:14px;
-  margin-bottom:10px;
-  font-size:1rem;
-  border-radius:10px;
-  border:none;
-  background:#7fd7ff;
-  color:#000;
-  font-weight:600;
-}
+  #titleBox {
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    pointer-events:none;
+    z-index:5;
+    opacity:0;
+    transition:opacity 1.2s ease;
+  }
 
-#status{
-  font-size:.9rem;
-  opacity:.8;
-}
+  #title {
+    color:#aee6ff;
+    font-size:clamp(28px, 6vw, 64px);
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    text-decoration:none;
+  }
 
-#video{
-  width:200px;
-  border:2px solid #7fd7ff;
-  border-radius:10px;
-  background:black;
-  margin-top:10px;
-}
+  #subtitle {
+    margin-top:8px;
+    color:rgba(174,230,255,0.85);
+    font-size:clamp(12px,1.6vw,18px);
+  }
+
+  canvas {
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+  }
 </style>
 </head>
 
 <body>
 
-<div id="panel">
-  <button id="camBtn">📷 Kamera starten</button>
-  <button id="wgBtn" disabled>👁️ WebGazer starten</button>
-  <div id="status">Warte…</div>
+<!-- Sound-Prompt -->
+<div id="tapStart">Tippe zum Starten</div>
+
+<!-- Canvas für Spinnweben -->
+<canvas id="webCanvas"></canvas>
+
+<!-- Titel (erscheint nach Burst) -->
+<div id="titleBox">
+  <a id="title" href="Aurion_Portal.html">AURION BITTET UM AUDIENCE</a>
+  <div id="subtitle">Ein Raum öffnet sich — bleibe ruhig und atme mit.</div>
 </div>
 
-<video id="video" playsinline muted></video>
-
 <script>
-const camBtn = document.getElementById("camBtn");
-const wgBtn  = document.getElementById("wgBtn");
-const status = document.getElementById("status");
-const video  = document.getElementById("video");
+/* -------------------------
+   SOUND SETUP (Android OK)
+--------------------------- */
+const audio = new Audio("sound.mp3");  // ← Deine Datei im gleichen Ordner
+audio.preload = "auto";
+audio.volume = 1.0;
 
-let stream = null;
+let audioStarted = false;
+const tapLayer = document.getElementById("tapStart");
 
-// 1️⃣ Kamera starten → Bild sichtbar
-camBtn.onclick = async ()=>{
-  status.textContent = "Fordere Frontkamera an…";
-
-  try{
-    stream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode:"user" }
-    });
-
-    video.srcObject = stream;
-    await video.play();
-
-    status.textContent = "Kamera aktiv ✔";
-    wgBtn.disabled = false;
-    camBtn.disabled = true;
-
-  }catch(e){
-    status.textContent = "❌ Kamera blockiert";
+tapLayer.addEventListener("click", () => {
+  if (!audioStarted) {
+    audio.play().catch(e => console.log("Autoplay blockiert:", e));
+    audioStarted = true;
   }
-};
+  tapLayer.style.display = "none"; // Intro freigeben
+  startAnimation();
+});
 
-// 2️⃣ WebGazer starten → Bild verschwindet
-wgBtn.onclick = ()=>{
-  status.textContent = "Starte WebGazer…";
+/* -------------------------
+   CANVAS SETUP
+--------------------------- */
+const canvas = document.getElementById("webCanvas");
+const ctx = canvas.getContext("2d");
+let W = canvas.width = innerWidth;
+let H = canvas.height = innerHeight;
 
-  // Kamerabild ausblenden
-  video.pause();
-  video.srcObject = null;
-  video.style.display = "none";
+window.addEventListener("resize", () => {
+  W = canvas.width = innerWidth;
+  H = canvas.height = innerHeight;
+});
 
-  // WebGazer übernimmt Kamera
-  webgazer
-    .setRegression("ridge")
-    .begin()
-    .showVideo(false)
-    .showPredictionPoints(false)
-    .setGazeListener(data=>{
-      // hier später Blicklogik
+/* LEICHTE, einfache Web-Animation (für mobile stabil) */
+let particles = [];
+const colors = ["#9fcfff","#7abaff","#5fa7ff","#8dd0ff"];
+
+function addWebBurst() {
+  for (let i = 0; i < 180; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp = Math.random() * 3 + 1;
+    particles.push({
+      x: W/2,
+      y: H/2,
+      vx: Math.cos(ang)*sp,
+      vy: Math.sin(ang)*sp,
+      life: Math.random()*900 + 400,
+      born: performance.now(),
+      color: colors[Math.floor(Math.random()*colors.length)],
+      size: Math.random()*2.5+1
     });
+  }
+}
 
-  status.textContent = "WebGazer aktiv ✔";
-  wgBtn.disabled = true;
-};
+function draw() {
+  ctx.clearRect(0,0,W,H);
+
+  let now = performance.now();
+  for (let i = particles.length - 1; i >= 0; i--) {
+    let p = particles[i];
+    let age = now - p.born;
+    if (age > p.life) {
+      particles.splice(i,1);
+      continue;
+    }
+    let t = 1 - age / p.life;
+    p.x += p.vx*0.98;
+    p.y += p.vy*0.98;
+    ctx.globalAlpha = t;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  requestAnimationFrame(draw);
+}
+
+/* -------------------------
+   STARTSEQUENZ
+--------------------------- */
+function startAnimation() {
+  draw();
+
+  // kleiner Delay, dann Web-Burst
+  setTimeout(() => {
+    addWebBurst();
+    revealTitle();
+  }, 800);
+
+  // Automatische Weiterleitung nach 10 Sekunden
+  setTimeout(() => {
+    window.location.href = "Aurion_Portal.html";
+  }, 10000); // 10 Sekunden
+}
+
+function revealTitle() {
+  document.getElementById("titleBox").style.opacity = 1;
+}
 </script>
-
 </body>
 </html>

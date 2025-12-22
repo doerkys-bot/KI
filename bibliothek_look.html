@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bibliothek – Blicksteuerung</title>
+<script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+<style>
+body {margin:0;padding:0;font-family:system-ui;background:#05070f;color:#eaeaea;text-align:center;}
+h1 {color:#8cf;margin:1rem;}
+.regal {display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;padding:2rem;max-width:900px;margin:auto;}
+.buch {height:160px;background:#0e162e;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:0.3s;font-size:1.1rem;}
+.buch.attention {box-shadow:0 0 35px #7fffd4;transform:scale(1.05);}
+.buch span {margin-top:0.5rem;}
+#dot {width:20px;height:20px;background:#7fffd4;border-radius:50%;position:absolute;transform:translate(-50%,-50%);}
+video#cam {position:fixed;bottom:10px;right:10px;width:160px;border:2px solid #7fffd4;border-radius:10px;}
+</style>
+</head>
+<body>
+
+<h1>Bibliothek – Blicksteuerung Demo</h1>
+
+<div class="regal">
+  <div class="buch" data-link="#">Vom Planschbecken ins Meer</div>
+  <div class="buch" data-link="#">Intuition oder Einbildung?</div>
+  <div class="buch" data-link="#">Selbstreflexion</div>
+  <div class="buch" data-link="#">Sternenübung</div>
+  <div class="buch" data-link="#">Aurion</div>
+  <div class="buch" data-link="#">Vorhof zu Aurion</div>
+</div>
+
+<video id="cam" autoplay playsinline muted></video>
+<div id="dot"></div>
+
+<script>
+const video = document.getElementById("cam");
+const dot = document.getElementById("dot");
+const books = document.querySelectorAll(".buch");
+
+// Kamera starten + WebGazer
+async function startCamera(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    video.srcObject = stream;
+    await video.play();
+
+    webgazer.setRegression("ridge").begin().then(()=>console.log("WebGazer ready"));
+    webgazer.showVideo(false);
+    webgazer.showPredictionPoints(false);
+
+    dot.style.left = window.innerWidth/2 + "px";
+    dot.style.top  = window.innerHeight/2 + "px";
+
+  } catch(err){
+    alert("Kamera konnte nicht gestartet werden:\n" + err);
+  }
+}
+startCamera();
+
+// Blicksteuerung: Buch markieren + nach 1 Sekunde "öffnen"
+const timers = new Map();
+
+setInterval(async ()=>{
+  if(!webgazer.isReady()) return;
+  const prediction = await webgazer.getCurrentPrediction();
+  if(!prediction) return;
+
+  const x = prediction.x;
+  const y = prediction.y;
+
+  books.forEach(book=>{
+    const rect = book.getBoundingClientRect();
+    if(x>rect.left && x<rect.right && y>rect.top && y<rect.bottom){
+      book.classList.add("attention");
+      if(!timers.has(book)){
+        const t = setTimeout(()=>{window.location.href=book.dataset.link;},1000);
+        timers.set(book,t);
+      }
+    } else {
+      book.classList.remove("attention");
+      if(timers.has(book)){
+        clearTimeout(timers.get(book));
+        timers.delete(book);
+      }
+    }
+  });
+
+},100);
+</script>
+</body>
+</html>

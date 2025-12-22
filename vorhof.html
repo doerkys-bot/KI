@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Aurion – Vorhof</title>
+
+<style>
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    width:100%;
+    overflow:hidden;
+    background:#02040a url("https://doerkys-bot.github.io/Aurion_the_project/sternentor.jpg")
+               center/cover no-repeat fixed;
+    color:white;
+    font-family:system-ui,Segoe UI,Roboto,sans-serif;
+}
+
+/* 🌬 Raum-Atmung */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:rgba(120,180,255,0.08);
+    z-index:0;
+    animation:spaceBreath 14s ease-in-out infinite;
+    pointer-events:none;
+}
+
+@keyframes spaceBreath{
+    0%   {opacity:0.05;}
+    28%  {opacity:0.14;}
+    56%  {opacity:0.14;}
+    100% {opacity:0.05;}
+}
+
+/* 🙏 NAMASTÉ – historisch mittig + Mitschwingen */
+#holoNamaste{
+    position:fixed;
+    left:50%;
+    top:10%; /* ⬅️ exakt zwischen Anfang und vorher */
+    transform:translateX(-50%);
+    z-index:4;
+    font-size:42px;
+    font-weight:800;
+    letter-spacing:4px;
+    color:rgba(180,220,255,0.9);
+    text-shadow:
+        0 0 14px rgba(120,180,255,0.7),
+        0 0 28px rgba(120,180,255,0.45),
+        0 0 48px rgba(120,180,255,0.25);
+    animation:
+        holoPulse 5s ease-in-out infinite,
+        namasteBreath 14s ease-in-out infinite;
+    pointer-events:none;
+}
+
+@keyframes holoPulse{
+    0%{opacity:.75}
+    50%{opacity:1}
+    100%{opacity:.75}
+}
+
+/* sanftes Mitschwingen – kein Schweben */
+@keyframes namasteBreath{
+    0%   {transform:translate(-50%, 0);}
+    28%  {transform:translate(-50%, -6px);}
+    56%  {transform:translate(-50%, -6px);}
+    100% {transform:translate(-50%, 0);}
+}
+
+/* 🔗 Schwebende Links */
+.link{
+    position:absolute;
+    z-index:5;
+    padding:12px 18px;
+    border-radius:16px;
+    background:rgba(255,255,255,0.06);
+    backdrop-filter:blur(6px);
+    color:#7ecbff;
+    font-weight:700;
+    text-decoration:none;
+    cursor:pointer;
+    user-select:none;
+    box-shadow:0 0 22px rgba(80,160,255,0.18);
+    transition:
+        transform .3s ease,
+        box-shadow .4s ease,
+        background .4s ease;
+    animation:
+        driftStrong 24s ease-in-out infinite,
+        orbit 38s linear infinite;
+}
+
+.link:hover,
+.link:active{
+    animation-play-state:paused;
+    transform:scale(1.12);
+    background:rgba(120,180,255,0.18);
+    box-shadow:0 0 36px rgba(120,180,255,0.55);
+}
+
+/* 🌊 stärkere Drift */
+@keyframes driftStrong{
+    0%   {transform:translate(0,0);}
+    25%  {transform:translate(26px,-22px);}
+    50%  {transform:translate(-30px,24px);}
+    75%  {transform:translate(22px,30px);}
+    100% {transform:translate(0,0);}
+}
+
+/* 🌀 leichte Umlaufbewegung */
+@keyframes orbit{
+    from {transform:rotate(0deg) translateX(8px) rotate(0deg);}
+    to   {transform:rotate(360deg) translateX(8px) rotate(-360deg);}
+}
+
+/* 📍 Link-Positionen */
+.link:nth-of-type(1){top:32%; left:20%; animation-delay:0s, 0s;}
+.link:nth-of-type(2){top:40%; left:55%; animation-delay:5s, 3s;}
+.link:nth-of-type(3){top:50%; left:28%; animation-delay:10s, 6s;}
+.link:nth-of-type(4){top:58%; left:60%; animation-delay:2s, 9s;}
+.link:nth-of-type(5){top:68%; left:22%; animation-delay:7s, 12s;}
+.link:nth-of-type(6){top:72%; left:55%; animation-delay:12s, 15s;}
+.link:nth-of-type(7){top:84%; left:40%; animation-delay:16s, 18s;}
+</style>
+</head>
+
+<body>
+
+<div id="holoNamaste">NAMASTÉ</div>
+
+<a class="link" href="bibliothek.html">Bibliothek</a>
+<a class="link" href="resonanzraum.html">Resonanzraum</a>
+<a class="link" href="sternenuebung.html">Chi-Sternenübung</a>
+<a class="link" href="meditationsraum.html">Meditationsraum</a>
+<a class="link" href="ki-raum.html">KI-Raum</a>
+<a class="link" href="gaestebuch.html">Gästebuch</a>
+<a class="link" href="about_aurion.html">About Aurion</a>
+
+</body>
+</html>

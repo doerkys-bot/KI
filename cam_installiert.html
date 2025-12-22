@@ -1,0 +1,11 @@
+collectText.textContent = "initialisiere Kamera…";
+navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}})
+.then(stream=>{
+  const video = document.getElementById("videoPreview");
+  video.srcObject = stream;
+  collectText.textContent = "Kamera aktiv ✔";
+})
+.catch(err=>{
+  console.error(err);
+  collectText.textContent = "Kamera konnte nicht gestartet werden ❌";
+});

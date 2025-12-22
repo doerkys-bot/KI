@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Kalibrierung – Mobile</title>
+<script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+<style>
+body{margin:0;height:100vh;background:#05070f;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:system-ui,sans-serif;text-align:center;}
+#dot{width:20px;height:20px;border-radius:50%;position:absolute;background:radial-gradient(circle,#7fffd4,#00aaff);box-shadow:0 0 20px #00aaff;}
+button{margin-top:1rem;padding:.8rem 1.4rem;font-size:1rem;cursor:pointer;}
+</style>
+</head>
+<body>
+<p>Folge dem Punkt mit deinen Augen, tippe „Start“ wenn bereit:</p>
+<button onclick="startCalibration()">Start</button>
+<div id="dot"></div>
+
+<script>
+const dot=document.getElementById("dot");
+const positions=[
+  {x:.1,y:.1},{x:.9,y:.1},{x:.5,y:.5},{x:.1,y:.9},{x:.9,y:.9}
+];
+let i=0;
+let calibrationData=[];
+
+function moveDot(pos){
+  dot.style.left=(pos.x*window.innerWidth-10)+"px";
+  dot.style.top=(pos.y*window.innerHeight-10)+"px";
+}
+
+function nextPoint(){
+  calibrationData.push({target:positions[i],time:Date.now()});
+  i++;
+  if(i<positions.length){
+    moveDot(positions[i]);
+    setTimeout(nextPoint,1500);
+  } else finishCalibration();
+}
+
+function finishCalibration(){
+  localStorage.setItem("aurion_gaze_calibration",JSON.stringify({
+    screen:{w:window.innerWidth,h:window.innerHeight},
+    points:calibrationData
+  }));
+  alert("Kalibrierung abgeschlossen!");
+  window.location.href="bibliothek_aug.html";
+}
+
+function startCalibration(){
+  // WebGazer starten
+  webgazer.setRegression('ridge')
+    .setGazeListener(data=>{})
+    .begin();
+  webgazer.showVideo(false);
+  webgazer.showPredictionPoints(false);
+
+  // Startpunkte
+  i=0;
+  calibrationData=[];
+  moveDot(positions[0]);
+  setTimeout(nextPoint,1500);
+}
+</script>
+</body>
+</html>

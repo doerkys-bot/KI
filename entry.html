@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurion Entry</title>
+
+<style>
+body { margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:system-ui,sans-serif; background:#05070f; color:white; text-align:center; }
+button { margin:1rem; padding:1rem 2rem; font-size:1.3rem; border:none; border-radius:8px; background:#0e162e; color:#7fffd4; touch-action:manipulation; }
+</style>
+</head>
+<body>
+<h1>Aurion</h1>
+<p>Darf die Kamera für Blicksteuerung genutzt werden?</p>
+<button id="yes">JA</button>
+<button onclick="location.href='about:blank'">NEIN</button>
+
+<script>
+const btn = document.getElementById("yes");
+
+function startCamera(){
+  navigator.mediaDevices.getUserMedia({video:true})
+    .then(stream=>{
+      stream.getTracks().forEach(t=>t.stop());
+      location.href="calibration.html";
+    })
+    .catch(e=>{
+      alert("Kamera blockiert:\n"+e);
+    });
+}
+
+// Android 15 / Mobile Touch Fix
+btn.addEventListener("pointerdown", startCamera);
+btn.addEventListener("touchstart", startCamera);
+btn.addEventListener("click", startCamera);
+</script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>📚 Bibliothek der Anfänge – Touch-Fixation</title>
+
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  background:radial-gradient(circle at 30% 40%, #0b1223, #05070f 80%);
+  color:#eaeaea;
+  font-family:system-ui,sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+h1{margin:1rem 0;color:#8cf;}
+
+.regal{
+  width:95%;
+  max-width:900px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.4rem;
+  padding:2.5rem 2rem;
+}
+
+.buch{
+  position:relative;
+  height:160px;
+  background:linear-gradient(90deg,#182545,#0e162e);
+  border-radius:10px;
+  border:1px solid rgba(130,170,255,.25);
+  box-shadow:0 10px 25px rgba(0,0,0,.55);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  touch-action: none;
+}
+
+.buch.attention{
+  box-shadow:0 0 35px rgba(140,200,255,.7);
+}
+
+.icons{margin-top:8px;font-size:1.4rem;}
+
+.ring{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .15s;
+}
+
+.buch.fixating .ring{
+  opacity:1;
+}
+
+.ring svg{
+  width:70px;
+  height:70px;
+}
+
+.ring circle{
+  fill:none;
+  stroke-width:6;
+}
+
+.ring .bg{
+  stroke:rgba(255,255,255,.15);
+}
+
+.ring .fg{
+  stroke:#7fd7ff;
+  stroke-linecap:round;
+  stroke-dasharray:176;
+  stroke-dashoffset:176;
+  transition:stroke-dashoffset .1s linear;
+}
+</style>
+</head>
+
+<body>
+
+<h1>📚 Bibliothek der Anfänge</h1>
+
+<div class="regal">
+  <div class="buch" data-link="a_v.html"><span>Vom Planschbecken ins Meer</span>
+    <div class="icons">😨 😔</div>
+    <div class="ring"><svg><circle class="bg" cx="35" cy="35" r="28"/><circle class="fg" cx="35" cy="35" r="28"/></svg></div>
+  </div>
+  <div class="buch" data-link="buch2_intuition.html"><span>Intuition oder Einbildung?</span>
+    <div class="icons">❓ 😏</div>
+    <div class="ring"><svg><circle class="bg" cx="35" cy="35" r="28"/><circle class="fg" cx="35" cy="35" r="28"/></svg></div>
+  </div>
+  <div class="buch" data-link="selbstreflexion.html"><span>Selbstreflexion</span>
+    <div class="icons">😊 😌</div>
+    <div class="ring"><svg><circle class="bg" cx="35" cy="35" r="28"/><circle class="fg" cx="35" cy="35" r="28"/></svg></div>
+  </div>
+  <div class="buch" data-link="sternenuebung1.html"><span>Sternenübung</span>
+    <div class="icons">📖 📖</div>
+    <div class="ring"><svg><circle class="bg" cx="35" cy="35" r="28"/><circle class="fg" cx="35" cy="35" r="28"/></svg></div>
+  </div>
+  <div class="buch" data-link="aurion_bibl.html"><span>Aurion</span>
+    <div class="icons">🌟 😎</div>
+    <div class="ring"><svg><circle class="bg" cx="35" cy="35" r="28"/><circle class="fg" cx="35" cy="35" r="28"/></svg></div>
+  </div>
+  <div class="buch" data-link="vorhof_aurion.html"><span>Vorhof zu Aurion</span>
+    <div class="icons">📖 📖</div>
+    <div class="ring"><svg><circle class="bg" cx="35" cy="35" r="28"/><circle class="fg" cx="35" cy="35" r="28"/></svg></div>
+  </div>
+</div>
+
+<script>
+/* ===============================
+   FIXATION PER TOUCH + KREIS
+=============================== */
+
+const books = [...document.querySelectorAll(".buch")];
+const FIX_TIME = 1500; // 1,5 Sekunden für Kreis
+
+let touchTimeout = null;
+let focusedBook = null;
+
+books.forEach(book=>{
+  const ring = book.querySelector(".fg");
+
+  book.addEventListener('pointerdown', e=>{
+    e.preventDefault();
+    focusedBook = book;
+    book.classList.add("fixating","attention");
+
+    let start = Date.now();
+
+    function update(){
+      if(focusedBook!==book) return;
+      const progress = Math.min(1,(Date.now()-start)/FIX_TIME);
+      ring.style.strokeDashoffset = 176 - progress*176;
+
+      if(progress>=1){
+        location.href = book.dataset.link;
+      } else {
+        requestAnimationFrame(update);
+      }
+    }
+    requestAnimationFrame(update);
+  });
+
+  book.addEventListener('pointerup', e=>{
+    focusedBook=null;
+    book.classList.remove("fixating","attention");
+    ring.style.strokeDashoffset=176;
+  });
+
+  book.addEventListener('pointercancel', e=>{
+    focusedBook=null;
+    book.classList.remove("fixating","attention");
+    ring.style.strokeDashoffset=176;
+  });
+});
+</script>
+
+</body>
+</html>
