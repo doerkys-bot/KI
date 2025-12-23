@@ -2,52 +2,45 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Datenschutzhinweis</title>
+<title>Datenschutz – AUGENBLICKE</title>
 <style>
 body{
-  background:#05070f;
-  color:#eaeaea;
   font-family:system-ui,sans-serif;
+  background:#0b1223;
+  color:#eaeaea;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  margin:0;
   padding:2rem;
-  max-width:720px;
-  margin:auto;
+  text-align:center;
 }
 button{
   margin-top:2rem;
   padding:1rem 2rem;
   font-size:1rem;
+  background:#7fd7ff;
+  color:#0b1223;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
 }
 </style>
 </head>
 <body>
+<h1>📚 AUGENBLICKE – Datenschutz</h1>
+<p>Um die Bibliothek über deine Augen zu steuern, verwenden wir die Kamera. Es werden keine Daten gespeichert oder weitergegeben.</p>
+<p>Die Daten bleiben nur im Browser für die Dauer deiner Sitzung.</p>
 
-<h2>Datenschutz & Blickerfassung</h2>
-
-<p>
-Diese Anwendung nutzt <strong>WebGazer.js</strong>, um Ihre Blickrichtung
-über die Webcam lokal im Browser zu berechnen.
-</p>
-
-<ul>
-<li>Es werden <strong>keine Videoaufnahmen gespeichert</strong></li>
-<li>Keine Daten werden an Server gesendet</li>
-<li>Die Kalibrierung wird <strong>lokal im Browser</strong> gespeichert</li>
-<li>Die Kamera wird nur für die Blickerfassung genutzt</li>
-</ul>
-
-<p>
-Mit der Zustimmung starten Sie einen Kalibrierungsprozess,
-der notwendig ist, um die Anwendung zu nutzen.
-</p>
-
-<button onclick="accept()">Zustimmen & fortfahren</button>
+<button id="agree">Ich stimme zu</button>
 
 <script>
-function accept(){
+document.getElementById("agree").addEventListener("click",()=>{
   localStorage.setItem("aurion_privacy_ok","true");
   window.location.href="bibliothek_aug.html";
-}
+});
 </script>
-
 </body>
 </html>
